@@ -6,8 +6,9 @@ CON
         _xinfreq = 5_000_000
 
 VAR
-  long  password[10]
-
+  long  password[100]
+  byte  strincnt
+  byte  tmpval
   
 OBJ
   pst    : "Parallax Serial Terminal"
@@ -19,30 +20,25 @@ PUB main
   dira[9] := 1
   outa[9] := 0
 
-  
-  
   repeat
-   login
-
-
-
-PRI login
-  repeat
-   pst.Str(String("LOGON: "))
-   ModStrInMax(password, 10)
-   pst.Str(String("PASSWORD: "))
+   thb(String("LOGON: "))
+   'ModStrIn(password, 9)
+   pst.StrInMax(password,7)
+   thb(String("PASSWORD: "))
    if strcomp(password, String("Joshua"))
-     loggedin
-
-PRI loggedin
-  pst.Str(String("GREETINGS PROFESSOR FALKEN"))
-  waitcnt(clkfreq + cnt)
+      pst.Str(String("GREETINGS PROFESSOR FALKEN"))
+      reboot
   
 
 
-
-
-
+PUB ModStrIn(stringptr, maxcount)
+  repeat strincnt FROM 0 TO maxcount
+    pst.Dec(strincnt)
+    tmpval := pst.CharIn
+    if (tmpval == 10)
+      quit
+    pst.Dec(tmpval)
+                   
 
 PUB ModStrInMax(stringptr, maxcount)
   repeat while (maxcount--)                                                     'While maxcount not reached
@@ -50,6 +46,11 @@ PUB ModStrInMax(stringptr, maxcount)
       quit
   byte[stringptr+(byte[stringptr-1] == 10)]~                                    'Zero terminate string; overwrite NL or append 0 char
 
+PUB thb(stringptr)
+  repeat strsize(stringptr)
+    pst.Char(byte[stringptr++])
+    waitcnt(clkfreq/10 + cnt)
+  
 DAT
 name    byte  "string_data",0        
         
